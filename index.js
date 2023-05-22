@@ -55,7 +55,7 @@ app.use(express.json());
 
 
 //ENVIAR TOKEN DE INGRESO
-app.post('/sendMsg',async (req, res) => {
+app.post('/sendMsgToken',async (req, res) => {
   let token = req.query.token;
   let cod_usuario = req.query.cod_usuario;
 
@@ -65,10 +65,50 @@ app.post('/sendMsg',async (req, res) => {
   const resIdChat = await urlObtenerIdChat.json();
   const textoMensaje = `Introduzca el siguiente código en los próximos 3 minutos para terminar de confirmar su inicio de sesión. \n<b>${token}</b>`;
 
-if(resIdChat.items.length == 0) return res.status(400).send({error: 'No existe un Usuario con el Codigo de Usuario solicitado.'})  
+  if(resIdChat.items.length == 0) return res.status(400).send({error: 'No existe un Usuario con el Codigo de Usuario solicitado.'})  
   bot.telegram.sendMessage(resIdChat.items[0].id_chat_telegram, textoMensaje, {parse_mode: 'HTML'});
   return res.status(200).send({ msg : 'Mensaje enviado con Exito.'})
 });
+
+
+app.post('/sendMsg', async (req, res)=>{
+  const cod_usuario = req.query.cod_usuario;
+  const msg_text = req.body.msg_text;
+
+  let urlObtenerIdChat = await fetch(
+    `https://saf.aicsacorp.com/ords/safws/telegram/id_char_usuario/${cod_usuario}`
+  );
+  const resIdChat = await urlObtenerIdChat.json();
+  if(resIdChat.items.length == 0) return res.status(400).send({error: 'No existe un Usuario con el Codigo de Usuario solicitado.'});
+  bot.telegram.sendMessage(resIdChat.items[0].id_chat_telegram, `${msg_text}`, {parse_mode: 'HTML'});
+  return res.status(200).send({ msg : 'Mensaje enviado con Exito.'})
+})
+
+async function sendImageFromURL(imageUrl, chatid) {
+  try {
+    const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+    const buffer = Buffer.from(response.data, 'binary');
+
+    // Send the image as a photo
+    await bot.telegram.sendPhoto(chatid, { source: buffer });
+  } catch (error) {
+    console.error('Error sending image:', error);
+    throw error;
+  }
+}
+
+
+app.post('/msgImage', async (req, res)=>{
+  const cod_usuario = req.query.cod_usuario;
+
+  let urlObtenerIdChat = await fetch(
+    `https://saf.aicsacorp.com/ords/safws/telegram/id_char_usuario/${cod_usuario}`
+  );
+  const resIdChat = await urlObtenerIdChat.json();
+  if(resIdChat.items.length == 0) return res.status(400).send({error: 'No existe un Usuario con el Codigo de Usuario solicitado.'});
+  sendImageFromURL('https://i.ibb.co/27cCQLc/image.png',resIdChat.items[0].id_chat_telegram)
+  return res.status(200).send({ msg : 'Mensaje enviado con Exito.'})
+})
 
 
 
