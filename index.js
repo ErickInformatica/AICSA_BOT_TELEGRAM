@@ -1,5 +1,6 @@
 const { Telegraf, Scenes, session } = require('telegraf');
 const express = require('express');
+const axios = require('axios');
 require('dotenv').config()
 const EnlazarWizard = require('./wizards/enlazar/wizard_enlazar');
 const DesenlazarWizard = require('./wizards/desenlazar/wizard_desenlazar');
@@ -106,7 +107,7 @@ app.post('/msgImage', async (req, res)=>{
   );
   const resIdChat = await urlObtenerIdChat.json();
   if(resIdChat.items.length == 0) return res.status(400).send({error: 'No existe un Usuario con el Codigo de Usuario solicitado.'});
-  sendImageFromURL('https://i.ibb.co/27cCQLc/image.png',resIdChat.items[0].id_chat_telegram)
+  sendImageFromURL('https://saf.aicsacorp.com/ords/safws/empleado/imagen/186000016524',resIdChat.items[0].id_chat_telegram)
   return res.status(200).send({ msg : 'Mensaje enviado con Exito.'})
 })
 
